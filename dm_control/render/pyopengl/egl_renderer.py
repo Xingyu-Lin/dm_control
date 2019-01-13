@@ -47,10 +47,15 @@ def create_initialized_headless_egl_display():
   """Creates an initialized EGL display directly on a device."""
   display = EGL.EGL_NO_DISPLAY
   devices = EGL.eglQueryDevicesEXT()
+  print('all devices:', devices)
+  select_device_id = int(os.environ.get('DM_CONTROL_RENDERING_SELECT_DEVICE_ID', -1))
+  if select_device_id!= -1 and select_device_id < len(devices): # Give priority to the selected device
+    devices[0], devices[select_device_id] = devices[select_device_id], devices[0]
   for device in devices:
     display = EGL.eglGetPlatformDisplayEXT(
         EGL.EGL_PLATFORM_DEVICE_EXT, device, None)
     if display and EGL.eglGetError() == EGL.EGL_SUCCESS:
+      print('select device:', device)
       initialized = EGL.eglInitialize(display, None, None)
       if EGL.eglGetError() == EGL.EGL_SUCCESS and initialized == EGL.EGL_TRUE:
         break
